@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2b4cff">
+<title>Strength Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8eee9;--card:#fbfcfa;--ink:#10241f;--mut:#5b6d66;--line:#d3ddd6;--acc:#2b4cff;--hero:#2b4cff;--gold:#ffd84d;--soft:#eef3ef;--disp:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#0c1512;--card:#14201c;--ink:#eaf3ee;--mut:#8ea39a;--line:#26372f;--acc:#8196ff;--soft:#1a2924}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:auto;padding:0 16px}
+header{padding:26px 16px 6px;max-width:760px;margin:auto}
+header b{font:800 1.05rem var(--disp);letter-spacing:-.01em}
+h1,h2,h3{font-family:var(--disp);margin:0;letter-spacing:-.02em}
+h2{font-size:1.35rem;font-weight:800;margin-bottom:4px}h3{font-size:1.05rem;font-weight:800}
+p{margin:0 0 8px}.mut{color:var(--mut)}.sm{font-size:.85rem}.note{font-size:.85rem;color:var(--mut);margin:6px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:14px}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.hero{background:var(--hero);color:#fff;border:0;padding:22px 20px 14px;margin-top:10px}
+.hero .when{font-size:.95rem;opacity:.85}
+.hero h1{font-size:clamp(2.6rem,12vw,4.6rem);line-height:.95;font-weight:800;margin:6px 0 8px}
+.hero .sub{opacity:.85;margin:0}
+.hero .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chip{background:rgba(255,255,255,.18);border-radius:99px;padding:4px 12px;font-size:.85rem;font-weight:600}
+.ring{position:relative;width:92px;height:92px;flex:none}.ring svg{width:100%;height:100%}
+.ring circle{fill:none;stroke-width:7}.rb{stroke:rgba(255,255,255,.25)}.rf{stroke:var(--gold);stroke-linecap:round;transition:stroke-dashoffset .5s}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:800 1.15rem var(--disp)}
+.hero #todayChecklist{margin-top:14px}
+.hero .task{border-top-color:rgba(255,255,255,.2)}.hero .task small,.hero .grp{color:rgba(255,255,255,.75)}
+.hero .box{border-color:rgba(255,255,255,.6)}
+.hero input:checked+.box{background:var(--gold);border-color:var(--gold)}.hero input:checked+.box::after{border-color:#10241f}
+.hero input:checked~span:last-child strong{color:rgba(255,255,255,.7)}
+.banner{background:var(--gold);color:#10241f;font-weight:700;border-radius:14px;padding:11px 14px;margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:22px}
+.stat{padding:14px 8px;text-align:center}.stat+.stat{border-left:1px solid var(--line)}
+.stat b{display:block;font:800 1.7rem/1.1 var(--disp)}.stat small{color:var(--mut)}
+input[type=checkbox]{position:absolute;opacity:0;width:0;height:0}
+.box{width:24px;height:24px;border-radius:8px;border:2px solid var(--line);background:var(--card);flex:none;display:grid;place-items:center;margin-top:1px;transition:.15s}
+input:checked+.box{background:var(--acc);border-color:var(--acc)}
+input:checked+.box::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+input:focus-visible+.box{outline:3px solid var(--gold);outline-offset:2px}
+.task{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer;position:relative}
+.task:first-child{border-top:0}.task small{display:block;color:var(--mut);font-size:.84rem}
+.task input:checked~span:last-child strong{color:var(--mut);text-decoration:line-through}
+.grp{font:800 .95rem var(--disp);color:var(--mut);padding:10px 0 0}
+.bar,.mini{height:8px;background:var(--soft);border-radius:99px;overflow:hidden}.bar{margin:12px 0 6px}
+.bar i,.mini i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .3s}
+.wk{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:14px;cursor:pointer;position:relative}
+.wk.today{background:var(--soft)}.wkn{flex:1;min-width:0}.wkn strong{display:block}.wkn small{color:var(--mut)}.mini{width:64px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:14px -4px;padding:2px 4px 6px;scrollbar-width:none}
+.tab{flex:1 0 62px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:8px 4px;font:inherit;cursor:pointer;text-align:center}
+.tab strong{display:block}.tab small{display:block;color:var(--mut);font-size:.72rem}.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}.tab.on small{color:inherit;opacity:.75}.tab.done small{color:var(--acc);font-weight:700}.tab.on.done small{color:var(--gold)}
+.pill{background:var(--soft);border-radius:99px;padding:3px 11px;font-weight:700;font-size:.85rem}
+.ex{border-top:1px solid var(--line);padding:4px 0 12px}.ex .task{border:0;padding-bottom:2px}.ind{margin-left:36px}
+.logrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 0 36px}.logrow label,.lab{font-size:.75rem;color:var(--mut);display:block}
+input[type=number],input[type=text],input[type=date],input[type=time],textarea,select{width:100%;background:var(--soft);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:9px 10px;font:inherit;margin-top:3px}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 14px;font-weight:600}
+button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.chart{width:100%;height:auto;display:block;margin-top:8px}.ct{font:700 11px system-ui;fill:var(--ink)}.cl{font:10px system-ui;fill:var(--mut)}
+.two{display:grid;grid-template-columns:1fr;gap:0}@media(min-width:700px){.two{grid-template-columns:1fr 1fr;gap:14px}}
+.three{display:grid;grid-template-columns:1fr;gap:8px}@media(min-width:700px){.three{grid-template-columns:1fr 1fr 1fr}}
+.empty{padding:14px;border:1px dashed var(--line);border-radius:14px;color:var(--mut)}
+.entry{border-top:1px solid var(--line);padding:10px 0}
+footer{max-width:760px;margin:auto;padding:18px 16px 40px;color:var(--mut);font-size:.8rem}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><b>strength tracker</b></header>
+<main class="wrap">
+<div id="banner" class="banner" hidden></div>
+
+<section class="card hero">
+  <div class="row">
+    <div style="flex:1;min-width:0">
+      <div class="when" id="dateLine"></div>
+      <h1 id="todayHeading">today</h1>
+      <p class="sub" id="todaySub"></p>
+    </div>
+    <div class="ring"><svg viewBox="0 0 80 80"><circle class="rb" cx="40" cy="40" r="34"/><circle class="rf" id="ringFg" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 40 40)"/></svg><b id="ringTxt">0%</b></div>
+  </div>
+  <div class="tags"><span class="chip" id="streakChip">0 day streak</span><span class="chip" id="nextUp"></span></div>
+  <div id="todayChecklist"></div>
+</section>
+
+<div class="stats">
+  <div class="stat"><b id="sStreak">0</b><small>day streak</small></div>
+  <div class="stat"><b id="sSess">0/3</b><small>strength sessions</small></div>
+  <div class="stat"><b id="sHab">0/4</b><small>habits today</small></div>
+</div>
+
+<section class="card">
+  <div class="row"><div><h2>this week</h2><p class="mut" id="weekLabel"></p></div><div><label class="lab" for="weekDate">week starting</label><input id="weekDate" type="date" style="width:170px"></div></div>
+  <div class="bar"><i id="weekBar"></i></div><p class="note" id="weekText"></p>
+  <div id="weekChecklist"></div>
+</section>
+
+<section class="card">
+  <h2>workout details and rep log</h2>
+  <p class="mut">pick a day to see instructions and record reps and weights.</p>
+  <div class="tabs" id="dayTabs"></div>
+  <div id="workoutPanel"></div>
+</section>
+
+<section class="card">
+  <h2>progress</h2>
+  <h3 style="margin-top:10px">days completed, last 8 weeks</h3>
+  <div id="chartWeeks"></div>
+  <h3 style="margin-top:20px">reps by exercise</h3>
+  <p class="note">all sets added together, each time you logged it.</p>
+  <select id="exSel" aria-label="choose exercise"></select>
+  <div id="chartEx"></div>
+</section>
+
+<div class="two">
+  <section class="card">
+    <h2>daily habits</h2>
+    <p class="mut">gentle reminders, not rules.</p>
+    <label class="task"><input type="checkbox" data-habit="meals"><span class="box"></span><span><strong>ate regular meals</strong></span></label>
+    <label class="task"><input type="checkbox" data-habit="water"><span class="box"></span><span><strong>drank water regularly</strong></span></label>
+    <label class="task"><input type="checkbox" data-habit="sleep"><span class="box"></span><span><strong>aimed for 8–10 hours of sleep</strong></span></label>
+    <label class="task"><input type="checkbox" data-habit="recovery"><span class="box"></span><span><strong>took breaks and recovered</strong></span></label>
+    <label class="lab" for="habitDate" style="margin-top:8px">date</label><input type="date" id="habitDate">
+  </section>
+  <section class="card">
+    <h2>quick notes</h2>
+    <p class="mut">energy, technique, what felt easier.</p>
+    <textarea id="notes" rows="6" placeholder="e.g. curls felt easier today, keep elbows steady"></textarea>
+    <div class="actions"><button class="primary" id="saveNotes">save notes</button><span id="saveStatus" class="note"></span></div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>progress log</h2>
+  <p class="mut">track strength and consistency, not body size.</p>
+  <div class="three">
+    <div><label class="lab" for="logDate">date</label><input type="date" id="logDate"></div>
+    <div><label class="lab" for="logWin">a win this week</label><input type="text" id="logWin" placeholder="e.g. better push-up form"></div>
+    <div><label class="lab" for="logNext">next time I’ll try</label><input type="text" id="logNext" placeholder="e.g. one extra rep"></div>
+  </div>
+  <div class="actions"><button class="primary" id="addLog">add entry</button></div>
+  <div id="logList" style="margin-top:8px"></div>
+</section>
+
+<section class="card">
+  <h2>reminders</h2>
+  <p class="mut">get a nudge if today’s session isn’t done by your chosen time.</p>
+  <label class="task"><input type="checkbox" id="remOn"><span class="box"></span><span><strong>remind me to train</strong><small>shows a banner at the top, plus a pop-up if allowed</small></span></label>
+  <label class="lab" for="remTime">reminder time</label><input type="time" id="remTime" style="width:150px">
+  <div class="actions"><button id="allowNotif">allow notifications</button></div>
+  <p class="note" id="notifNote"></p>
+  <p class="note">reminders only fire while this page is open in your browser.</p>
+</section>
+
+<section class="card">
+  <h2>progression rules</h2>
+  <p class="mut">what helps you improve over time.</p>
+  <div class="task"><span><strong>weight</strong><small>increase gradually</small></span></div>
+  <div class="task"><span><strong>repetitions</strong><small>work within the listed ranges</small></span></div>
+  <div class="task"><span><strong>technique</strong><small>controlled throughout</small></span></div>
+  <div class="task"><span><strong>rest between sets</strong><small>1–2 minutes</small></span></div>
+  <div class="task"><span><strong>effort</strong><small>usually leave 2–3 good reps</small></span></div>
+  <div class="task"><span><strong>sleep</strong><small>aim for 8–10 hours</small></span></div>
+  <p class="note" style="margin-top:10px">don’t rush to heavier weights. when an exercise feels comfortable at the top of its rep range, increase the load slightly.</p>
+  <p class="note">stick with the programme, record your weights and reps, eat enough to support growth and prioritise recovery. consistency over months is what makes the difference. 💪</p>
+</section>
+
+<section class="card">
+  <h2>equipment and safety</h2>
+  <p>available: two 2.5 kg dumbbells and two 1 kg dumbbells. use controlled reps and stop if you feel pain, dizziness or unusual discomfort. don’t grip two dumbbells together if they can slip. a sturdy, stable chair is only for support when it cannot tip or slide.</p>
+  <p class="note">good form matters more than doing heaps of reps. take your rest days and stop if something hurts.</p>
+  <div class="actions"><button id="exportData">export my data</button><button id="resetData">reset all tracker data</button></div>
+  <p class="note" id="dataStatus">your data is saved in this browser on this device.</p>
+</section>
+</main>
+<footer>made for steady progress. data is saved locally in your browser; clearing browser data or switching browsers may hide your saved entries.</footer>
+<script>
+const K='strengthTrackerV2',DN=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const workouts=[
+ {day:"Mon",name:"push",kind:"strength",desc:"day 1: chest, shoulders and triceps",items:[
+  ["dumbbell floor press","8–12 reps","press up from the floor and lower until upper arms gently touch the ground.","chest, triceps",3],
+  ["dumbbell shoulder press","8–12 reps","press straight overhead without arching your back; lower slowly.","shoulders, triceps",2],
+  ["dumbbell lateral raises","12–15 reps","raise arms out to the sides to about shoulder height with soft elbows.","side shoulders",3],
+  ["overhead tricep extensions","10–15 reps","hold one dumbbell securely with both hands; bend and straighten elbows slowly.","triceps",2],
+  ["push-up cycle","controlled","cycle through your push-up variations with slow, controlled reps.","chest, triceps, core",1]]},
+ {day:"Tue",name:"pull",kind:"strength",desc:"day 2: back, rear delts and biceps",items:[
+  ["one-arm dumbbell rows","10–15 each side","support a hand on a stable surface, keep your back neutral and pull towards your hip.","back, biceps",3],
+  ["bent-over barbell rows","10–15 reps","hinge forward with a flat back and pull the bar towards your lower ribs.","back, biceps",2],
+  ["dumbbell pullovers","10–12 reps","lie back, keep arms softly bent and lower the weight behind your head under control.","lats, chest",2],
+  ["reverse dumbbell fly","12–15 reps","hinge forward with a neutral back and lift arms out gently.","rear shoulders, upper back",2],
+  ["dumbbell bicep curls","10–15 reps","curl without swinging your body; lower slowly.","biceps",2],
+  ["hammer curls","10–12 reps","keep palms facing each other and curl without swinging.","biceps, forearms",2]]},
+ {day:"Wed",name:"legs",kind:"strength",desc:"day 3: quads, hamstrings and glutes",items:[
+  ["goblet squats","10–15 reps","hold one dumbbell at your chest, sit hips back and stand smoothly.","quads, glutes",3],
+  ["romanian deadlifts","10–12 reps","push hips backwards with a neutral back and feel the stretch in your hamstrings.","hamstrings, glutes",3],
+  ["reverse lunges","10 each side","step back and lower gently with your front knee over your ankle.","legs, glutes",2],
+  ["glute bridges","12–15 reps","lift hips while keeping ribs down; avoid arching your lower back.","glutes",2],
+  ["calf raises","12–15 reps","rise onto your toes, pause, then lower slowly.","calves",2]]},
+ {day:"Thu",name:"rest",kind:"rest",desc:"day 4: no hard strength training. gentle mobility, core and a 5 km run or walk",items:[]},
+ {day:"Fri",name:"chest / back / arms",kind:"strength",desc:"day 5: chest, back and arms",items:[
+  ["dumbbell floor press","10–12 reps","press up from the floor and lower until upper arms gently touch the ground.","chest, triceps",2],
+  ["one-arm dumbbell rows","10–15 each side","support a hand on a stable surface, keep your back neutral and pull towards your hip.","back, biceps",3],
+  ["dumbbell curls","10–12 reps","curl without swinging your body; lower slowly.","biceps",2],
+  ["hammer curls","10–12 reps","keep palms facing each other and curl without swinging.","biceps, forearms",2],
+  ["tricep extensions","10–15 reps","hold one dumbbell securely with both hands; bend and straighten elbows slowly.","triceps",2]]},
+ {day:"Sat",name:"shoulders + legs",kind:"strength",desc:"day 6: shoulders and legs",items:[
+  ["dumbbell lateral raises","12–15 reps","raise arms out to the sides to about shoulder height with soft elbows.","side shoulders",3],
+  ["dumbbell reverse fly","12–15 reps","hinge forward with a neutral back and lift arms out gently.","rear shoulders, upper back",2],
+  ["goblet squats","10–15 reps","hold one dumbbell at your chest, sit hips back and stand smoothly.","quads, glutes",2],
+  ["romanian deadlifts","10–12 reps","push hips backwards with a neutral back and feel the stretch in your hamstrings.","hamstrings, glutes",2],
+  ["calf raises","12–15 reps","rise onto your toes, pause, then lower slowly.","calves",2]]},
+ {day:"Sun",name:"rest",kind:"rest",desc:"day 7: full recovery. let your muscles adapt, with core and a 5 km run or walk",items:[]}
+];
+const sub=it=>`${it[4]} ${it[4]===1?'set':'sets'} · ${esc(it[1])} · ${esc(it[3])}`;
+const CORE=[['crunches','46 total (23 + 23)'],['leg raises','55 total (27 + 28)'],['twists','35 total (17 + 18)'],['push-ups','20 total']];
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0'),iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayISO=()=>iso(new Date()),dow=s=>(new Date(s+'T12:00:00').getDay()+6)%7;
+const dateAdd=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
+const mondayOf=s=>{s=s||todayISO();return dateAdd(s,-dow(s))};
+const fmt=(s,o)=>new Date(s+'T12:00:00').toLocaleDateString(undefined,o);
+let data={};try{data=JSON.parse(localStorage.getItem(K)||'null')||{};if(!Object.keys(data).length){const o=JSON.parse(localStorage.getItem('strengthTrackerV1')||'{}');['habits','notes','progress'].forEach(k=>{if(o[k])data[k]=o[k]})}}catch(e){}
+function init(){data.days=data.days||{};data.settings=Object.assign({remind:false,time:'07:00',last:''},data.settings)}init();
+let selected=dow(todayISO()),lastDay=todayISO();
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(data))}catch(e){}};
+const wk=()=>$('weekDate').value||mondayOf();
+const ST=(m,i,make)=>{const k=m+'_'+i;return data.days[k]||(make?(data.days[k]={checked:{},logs:{},coreChecked:{},complete:false}):null)};
+const dayState=i=>ST(wk(),i,true);
+function frac(w,st){if(!st)return 0;if(w.kind==='strength')return w.items.filter((_,j)=>st.checked&&st.checked[j]).length/w.items.length;
+ if(w.kind==='rest'){if(st.complete)return 1;return (CORE.filter((_,j)=>st.coreChecked&&st.coreChecked[j]).length+(st.runChecked?1:0))/(CORE.length+1)}return st.complete?1:0}
+const isDone=(w,st)=>frac(w,st)>=1;
+function setDay(w,st,v){if(w.kind==='strength')w.items.forEach((_,j)=>st.checked[j]=v);else if(w.kind==='rest'){CORE.forEach((_,j)=>st.coreChecked[j]=v);st.runChecked=v;st.complete=false}else st.complete=v}
+function tick(t,st){const k=t.dataset.k,j=t.dataset.j;if(k==='ex')st.checked[j]=t.checked;else if(k==='core'){st.coreChecked[j]=t.checked;st.complete=false}else if(k==='run'){st.runChecked=t.checked;st.complete=false}else if(k==='act')st.complete=t.checked}
+function streak(){let d=todayISO(),n=0;for(let k=0;k<400;k++,d=dateAdd(d,-1)){const i=dow(d),w=workouts[i];if(isDone(w,ST(mondayOf(d),i,false)))n++;else if(d===todayISO()||w.kind==='activity')continue;else break}return n}
+const chk=(k,j,on,title,sub)=>`<label class="task"><input type="checkbox" data-k="${k}" data-j="${j}" ${on?'checked':''}><span class="box"></span><span><strong>${title}</strong><small>${sub}</small></span></label>`;
+function tasks(w,st){if(w.kind==='strength')return w.items.map((it,j)=>chk('ex',j,st.checked[j],`${j+1}. ${esc(it[0])}`,sub(it))).join('');
+ if(w.kind==='rest'){const L=!!st.complete;return `<div class="grp">daily core: 2 sets plus push-ups</div>`+CORE.map((it,j)=>chk('core',j,L||st.coreChecked[j],it[0],it[1])).join('')+`<div class="grp">rest-day cardio</div>`+chk('run',0,L||st.runChecked,'run or walk 5 km','your choice of pace')}
+ return chk('act',0,st.complete,'optional activity','bike ride, sport, walk or something fun')}
+function renderHero(){const t=todayISO(),i=dow(t),w=workouts[i],st=ST(mondayOf(),i,true),f=frac(w,st),s=streak();
+ $('dateLine').textContent=fmt(t,{weekday:'long',day:'numeric',month:'long'});$('todayHeading').textContent=w.name;$('todaySub').textContent=w.desc;
+ $('todayChecklist').innerHTML=tasks(w,st);$('ringFg').style.strokeDashoffset=213.6*(1-f);$('ringTxt').textContent=Math.round(f*100)+'%';
+ $('streakChip').textContent=s+(s===1?' day streak':' day streak');$('nextUp').textContent=`next: ${DN[(i+1)%7]}, ${workouts[(i+1)%7].name}`}
+$('todayChecklist').onchange=e=>{if(!e.target.dataset.k)return;const i=dow(todayISO());tick(e.target,ST(mondayOf(),i,true));save();renderAll()};
+function renderStats(){const m=wk();let c=0,dn=0;workouts.forEach((w,i)=>{const d=isDone(w,ST(m,i,false));if(d)dn++;if(d&&w.kind==='strength')c++});
+ const h=(data.habits||{})[$('habitDate').value||todayISO()]||{};
+ $('sSess').textContent=c+'/'+workouts.filter(w=>w.kind==='strength').length;$('sHab').textContent=Object.values(h).filter(Boolean).length+'/4';$('sStreak').textContent=streak();
+ $('weekBar').style.width=Math.round(dn/7*100)+'%';$('weekText').textContent=`${dn} of 7 days done`;$('weekLabel').textContent='week of '+fmt(m,{day:'numeric',month:'short',year:'numeric'})}
+function renderWeek(){const m=wk(),t=todayISO();$('weekChecklist').innerHTML=workouts.map((w,i)=>{const f=frac(w,ST(m,i,false));
+ return `<label class="wk ${dateAdd(m,i)===t?'today':''}"><input type="checkbox" data-wd="${i}" ${f>=1?'checked':''}><span class="box"></span><span class="wkn"><strong>${DN[i]}</strong><small>${esc(w.name)}</small></span><span class="mini"><i style="width:${Math.round(f*100)}%"></i></span></label>`}).join('')}
+$('weekChecklist').onchange=e=>{const i=e.target.dataset.wd;if(i===undefined)return;setDay(workouts[i],dayState(+i),e.target.checked);save();renderAll()};
+function renderTabs(){$('dayTabs').innerHTML=workouts.map((w,i)=>{const d=isDone(w,ST(wk(),i,false));return `<button class="tab ${selected===i?'on':''} ${d?'done':''}" data-day="${i}"><strong>${w.day}</strong><small>${fmt(dateAdd(wk(),i),{day:'numeric',month:'short'})}</small><small>${d?'done ✓':w.kind==='strength'?'train':w.kind==='activity'?'move':'rest'}</small></button>`}).join('');
+ document.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{selected=+b.dataset.day;renderTabs();renderWorkout()})}
+function renderWorkout(){const w=workouts[selected],st=dayState(selected),f=frac(w,st);
+ let h=`<div class="row"><div><h3>${DN[selected]}: ${esc(w.name)}</h3><p class="mut">${esc(w.desc)}</p></div><span class="pill">${Math.round(f*100)}%</span></div>`;
+ if(w.kind==='strength')h+=`<p class="note">warm up for about 5 minutes. rest 1–2 minutes between sets and usually leave 2–3 good reps in reserve.</p>`+w.items.map((it,j)=>{const lg=st.logs[j]||{};
+  return `<div class="ex">${chk('ex',j,st.checked[j],`${j+1}. ${esc(it[0])}`,sub(it))}<p class="note ind">${esc(it[2])}</p><div class="logrow" style="grid-template-columns:repeat(${it[4]+1},1fr)">${[...Array(it[4]).keys()].map(k=>['s'+(k+1),'set '+(k+1)+' reps','reps','number']).concat([['weight','weight (kg)','e.g. 2.5','text']]).map(x=>`<label>${x[1]}<input type="${x[3]}" ${x[3]==='number'?'min="0" max="1000" inputmode="numeric"':''} data-log="${j}" data-f="${x[0]}" value="${esc(lg[x[0]]||'')}" placeholder="${x[2]}"></label>`).join('')}</div></div>`}).join('');
+ else{h+=tasks(w,st);if(w.kind==='activity')h+=`<label class="lab" for="actNote" style="margin-top:8px">what did you do? (optional)</label><input id="actNote" type="text" value="${esc(st.actNote||'')}" placeholder="e.g. played basketball">`}
+ h+=`<div class="actions"><button class="primary" id="dayAll">${f>=1?'clear this day':'mark day complete'}</button></div>`;$('workoutPanel').innerHTML=h}
+$('workoutPanel').onchange=e=>{const t=e.target,st=dayState(selected);if(t.dataset.k){tick(t,st);save();renderAll()}else if(t.dataset.log!==undefined){(st.logs[t.dataset.log]=st.logs[t.dataset.log]||{})[t.dataset.f]=t.value;save();renderCharts()}else if(t.id==='actNote'){st.actNote=t.value;save()}};
+$('workoutPanel').onclick=e=>{if(e.target.id==='dayAll'){const w=workouts[selected],st=dayState(selected);setDay(w,st,frac(w,st)<1);save();renderAll()}};
+function renderCharts(){const t=mondayOf(),W=[];for(let k=7;k>=0;k--){const m=dateAdd(t,-7*k);let n=0;workouts.forEach((w,i)=>{if(isDone(w,ST(m,i,false)))n++});W.push([m,n])}
+ $('chartWeeks').innerHTML=`<svg viewBox="0 0 320 130" class="chart" role="img" aria-label="days completed per week">${W.map((x,k)=>{const h=x[1]/7*76,xx=k*40+3;return `<rect x="${xx}" y="${100-h}" width="34" height="${Math.max(h,3)}" rx="8" fill="var(--acc)" opacity="${x[1]?1:.25}"/><text x="${xx+17}" y="${94-h}" text-anchor="middle" class="ct">${x[1]}</text><text x="${xx+17}" y="118" text-anchor="middle" class="cl">${fmt(x[0],{day:'numeric',month:'short'})}</text>`}).join('')}</svg>`;
+ const sel=$('exSel');if(!sel.options.length){workouts.forEach((w,i)=>w.items.forEach((it,j)=>sel.add(new Option(`${w.day}: ${it[0]}`,i+':'+j))))}
+ const [ei,ej]=sel.value.split(':').map(Number),P=[];for(let k=25;k>=0;k--){const m=dateAdd(t,-7*k),s=ST(m,ei,false),lg=s&&s.logs&&s.logs[ej];if(lg){const r=(+lg.s1||0)+(+lg.s2||0)+(+lg.s3||0);if(r>0)P.push({d:dateAdd(m,ei),r,w:lg.weight})}}
+ if(P.length<2){$('chartEx').innerHTML=`<div class="empty" style="margin-top:10px">${P.length?'one session logged. log it again to see a trend.':'no reps logged yet. add reps in the rep log above.'}</div>`;return}
+ const mx=Math.max(...P.map(p=>p.r)),mn=Math.min(...P.map(p=>p.r)),X=k=>16+k*(288/(P.length-1)),Y=r=>mx===mn?55:98-(r-mn)/(mx-mn)*66;
+ $('chartEx').innerHTML=`<svg viewBox="0 0 320 130" class="chart" role="img" aria-label="reps over time"><polyline fill="none" stroke="var(--acc)" stroke-width="3" stroke-linejoin="round" points="${P.map((p,k)=>X(k)+','+Y(p.r)).join(' ')}"/>${P.map((p,k)=>`<circle cx="${X(k)}" cy="${Y(p.r)}" r="4.5" fill="var(--acc)"/><text x="${X(k)}" y="${Y(p.r)-10}" text-anchor="middle" class="ct">${p.r}</text>`).join('')}<text x="16" y="124" class="cl">${fmt(P[0].d,{day:'numeric',month:'short'})}</text><text x="304" y="124" text-anchor="end" class="cl">${fmt(P[P.length-1].d,{day:'numeric',month:'short'})}${P[P.length-1].w?' · '+esc(P[P.length-1].w)+' kg':''}</text></svg>`}
+$('exSel').onchange=renderCharts;
+function renderHabits(){const date=$('habitDate').value||todayISO();data.habits=data.habits||{};const h=data.habits[date]||{};
+ document.querySelectorAll('[data-habit]').forEach(el=>{el.checked=!!h[el.dataset.habit];el.onchange=()=>{data.habits[date]=data.habits[date]||{};data.habits[date][el.dataset.habit]=el.checked;save();renderStats()}})}
+function renderLogs(){const l=data.progress||[];$('logList').innerHTML=l.length?l.slice().reverse().map((x,r)=>`<div class="entry"><div class="row"><strong>${esc(x.date)}</strong><button data-delete="${l.length-1-r}">delete</button></div><p>${esc(x.win||'no win added')}</p><p class="note">next time: ${esc(x.next||'none')}</p></div>`).join(''):'<div class="empty">no entries yet. add your first whenever you like.</div>';
+ document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{data.progress.splice(+b.dataset.delete,1);save();renderLogs()})}
+function renderSettings(){const s=data.settings;$('remOn').checked=s.remind;$('remTime').value=s.time;
+ $('notifNote').textContent=!('Notification' in window)?'this browser doesn’t support pop-ups; the banner still works.':Notification.permission==='granted'?'pop-up notifications are on.':Notification.permission==='denied'?'pop-ups are blocked in your browser settings; the banner still works.':'tap “allow notifications” to also get a pop-up.'}
+$('remOn').onchange=()=>{data.settings.remind=$('remOn').checked;save();reminders()};
+$('remTime').onchange=()=>{data.settings.time=$('remTime').value||'07:00';data.settings.last='';save();reminders()};
+$('allowNotif').onclick=()=>{if('Notification' in window)Notification.requestPermission().then(renderSettings)};
+function reminders(){const s=data.settings,t=todayISO(),i=dow(t),w=workouts[i],st=ST(mondayOf(),i,false),b=$('banner'),d=new Date(),now=pad(d.getHours())+':'+pad(d.getMinutes());
+ if(s.remind&&now>=s.time&&!isDone(w,st)){b.hidden=false;b.textContent=`time to train: today is ${w.name}, ${Math.round(frac(w,st)*100)}% done.`;
+  if(s.last!==t){s.last=t;save();try{if('Notification' in window&&Notification.permission==='granted')new Notification('Strength Tracker',{body:`today: ${w.name}`})}catch(e){}}}else b.hidden=true}
+function renderAll(){renderHero();renderTabs();renderWorkout();renderWeek();renderStats();renderCharts();renderHabits();renderLogs();renderSettings();reminders()}
+function syncToday(){const t=todayISO();if(t!==lastDay){lastDay=t;$('weekDate').value=mondayOf(t);$('habitDate').value=t;$('logDate').value=t;selected=dow(t);$('notes').value=(data.notes||{})[t]||'';renderAll()}else reminders()}
+setInterval(syncToday,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncToday()});window.addEventListener('focus',syncToday);
+$('weekDate').value=mondayOf();$('habitDate').value=todayISO();$('logDate').value=todayISO();
+$('weekDate').onchange=()=>{const t=todayISO();selected=(t>=wk()&&t<=dateAdd(wk(),6))?dow(t):0;renderAll()};
+$('habitDate').onchange=()=>{renderHabits();renderStats();$('notes').value=(data.notes||{})[$('habitDate').value]||''};
+$('saveNotes').onclick=()=>{data.notes=data.notes||{};data.notes[$('habitDate').value||todayISO()]=$('notes').value;save();$('saveStatus').textContent='saved';setTimeout(()=>$('saveStatus').textContent='',1600)};
+$('addLog').onclick=()=>{const win=$('logWin').value.trim(),next=$('logNext').value.trim();if(!win&&!next){alert('add a win or something to try next time first.');return}data.progress=data.progress||[];data.progress.push({date:$('logDate').value||todayISO(),win,next});save();$('logWin').value='';$('logNext').value='';renderLogs()};
+$('exportData').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='strength-tracker-data.json';a.click();URL.revokeObjectURL(u);$('dataStatus').textContent='export started. keep the file somewhere safe.'};
+$('resetData').onclick=()=>{if(confirm('This deletes all saved tracker data from this browser. Export first if you want a backup.')){try{localStorage.removeItem(K)}catch(e){}data={};init();selected=dow(todayISO());$('notes').value='';renderAll();$('dataStatus').textContent='tracker data reset.'}};
+$('notes').value=(data.notes||{})[todayISO()]||'';
+renderAll();
+</script>
+</body>
+</html>
