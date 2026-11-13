@@ -68,6 +68,12 @@ button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
 .empty{padding:14px;border:1px dashed var(--line);border-radius:14px;color:var(--mut)}
 .entry{border-top:1px solid var(--line);padding:10px 0}
 footer{max-width:760px;margin:auto;padding:18px 16px 40px;color:var(--mut);font-size:.8rem}
+[hidden]{display:none!important}
+.hero button{background:var(--gold);color:#10241f;border-color:var(--gold);font-weight:800}
+#coach{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;padding:max(14px,env(safe-area-inset-top)) 14px max(20px,env(safe-area-inset-bottom))}
+.coach-in{max-width:520px;margin:auto}
+.cbar{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin:12px 0}.cbar i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+.big{font:800 clamp(4.5rem,24vw,7rem)/1 var(--disp);margin:10px 0;font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -86,6 +92,7 @@ footer{max-width:760px;margin:auto;padding:18px 16px 40px;color:var(--mut);font-
     <div class="ring"><svg viewBox="0 0 80 80"><circle class="rb" cx="40" cy="40" r="34"/><circle class="rf" id="ringFg" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 40 40)"/></svg><b id="ringTxt">0%</b></div>
   </div>
   <div class="tags"><span class="chip" id="streakChip">0 day streak</span><span class="chip" id="nextUp"></span></div>
+  <div class="actions" id="heroStart" style="margin-top:14px"><button id="startToday" style="padding:14px 22px">start workout</button></div>
   <div id="todayChecklist"></div>
 </section>
 
@@ -159,16 +166,28 @@ footer{max-width:760px;margin:auto;padding:18px 16px 40px;color:var(--mut);font-
 </section>
 
 <section class="card">
-  <h2>progression rules</h2>
-  <p class="mut">what helps you improve over time.</p>
-  <div class="task"><span><strong>weight</strong><small>increase gradually</small></span></div>
-  <div class="task"><span><strong>repetitions</strong><small>work within the listed ranges</small></span></div>
-  <div class="task"><span><strong>technique</strong><small>controlled throughout</small></span></div>
-  <div class="task"><span><strong>rest between sets</strong><small>1–2 minutes</small></span></div>
-  <div class="task"><span><strong>effort</strong><small>usually leave 2–3 good reps</small></span></div>
-  <div class="task"><span><strong>sleep</strong><small>aim for 8–10 hours</small></span></div>
-  <p class="note" style="margin-top:10px">don’t rush to heavier weights. when an exercise feels comfortable at the top of its rep range, increase the load slightly.</p>
-  <p class="note">stick with the programme, record your weights and reps, eat enough to support growth and prioritise recovery. consistency over months is what makes the difference. 💪</p>
+  <h2>weekly training overview</h2>
+  <p class="mut">direct sets per muscle group each week.</p>
+  <div class="task"><span style="flex:1"><strong>chest</strong></span><b>9</b></div>
+  <div class="task"><span style="flex:1"><strong>back</strong></span><b>13</b></div>
+  <div class="task"><span style="flex:1"><strong>shoulders</strong></span><b>9</b></div>
+  <div class="task"><span style="flex:1"><strong>biceps</strong></span><b>9</b></div>
+  <div class="task"><span style="flex:1"><strong>triceps</strong></span><b>6</b></div>
+  <div class="task"><span style="flex:1"><strong>legs</strong></span><b>19*</b></div>
+  <div class="task"><span style="flex:1"><strong>abs</strong></span><b>9</b></div>
+  <p class="note" style="margin-top:10px">*legs are split across several muscles, and some exercises work multiple areas. the total isn’t 19 sets for each leg muscle.</p>
+</section>
+
+<section class="card">
+  <h2>rules for every workout</h2>
+  <p><strong>this is a starting programme, not a challenge to complete at all costs.</strong> build up gradually, use weights you can control, and leave around 2–3 good reps in reserve on most sets. you don’t need to train to failure on every exercise.</p>
+  <div class="task"><span><strong>warm up for 5 minutes</strong></span></div>
+  <div class="task"><span><strong>rest around 1–2 minutes between sets</strong></span></div>
+  <div class="task"><span><strong>use controlled movements</strong><small>rather than swinging weights</small></span></div>
+  <div class="task"><span><strong>increase weight only when your technique stays solid</strong></span></div>
+  <div class="task"><span><strong>stop if you feel pain</strong><small>rather than normal muscle effort</small></span></div>
+  <div class="task"><span><strong>support your training</strong><small>enough food, recovery and sleep</small></span></div>
+  <p class="note" style="margin-top:10px">your front delts and triceps already get plenty of work from pressing, so don’t rush to add more sets. quality reps and recovery matter much more than chasing a huge set count.</p>
 </section>
 
 <section class="card">
@@ -180,42 +199,54 @@ footer{max-width:760px;margin:auto;padding:18px 16px 40px;color:var(--mut);font-
 </section>
 </main>
 <footer>made for steady progress. data is saved locally in your browser; clearing browser data or switching browsers may hide your saved entries.</footer>
+<div id="coach" hidden role="dialog" aria-modal="true" aria-label="guided workout"><div class="coach-in">
+  <div class="row" style="align-items:center"><span class="pill" id="cProg"></span><button id="cClose">end workout</button></div>
+  <div class="cbar"><i id="cBar"></i></div>
+  <div id="cBody"></div>
+</div></div>
 <script>
-const K='strengthTrackerV2',DN=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const K='strengthTrackerV3',DN=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const workouts=[
- {day:"Mon",name:"push",kind:"strength",desc:"day 1: chest, shoulders and triceps",items:[
+ {day:"Mon",name:"push + abs",kind:"strength",desc:"chest, shoulders, triceps and abs",items:[
   ["dumbbell floor press","8–12 reps","press up from the floor and lower until upper arms gently touch the ground.","chest, triceps",3],
+  ["dumbbell squeeze press","10–12 reps","press the two dumbbells together as you push up from the floor, keeping them squeezed against each other.","chest",2],
   ["dumbbell shoulder press","8–12 reps","press straight overhead without arching your back; lower slowly.","shoulders, triceps",2],
-  ["dumbbell lateral raises","12–15 reps","raise arms out to the sides to about shoulder height with soft elbows.","side shoulders",3],
+  ["lateral raises","12–15 reps","raise arms out to the sides to about shoulder height with soft elbows.","side shoulders",3],
   ["overhead tricep extensions","10–15 reps","hold one dumbbell securely with both hands; bend and straighten elbows slowly.","triceps",2],
-  ["push-up cycle","controlled","cycle through your push-up variations with slow, controlled reps.","chest, triceps, core",1]]},
- {day:"Tue",name:"pull",kind:"strength",desc:"day 2: back, rear delts and biceps",items:[
+  ["reverse crunches","10–15 reps","lie on your back and curl your knees towards your chest by lifting your hips slightly; lower slowly.","abs",3]]},
+ {day:"Tue",name:"pull",kind:"strength",desc:"back, rear delts and biceps",items:[
   ["one-arm dumbbell rows","10–15 each side","support a hand on a stable surface, keep your back neutral and pull towards your hip.","back, biceps",3],
-  ["bent-over barbell rows","10–15 reps","hinge forward with a flat back and pull the bar towards your lower ribs.","back, biceps",2],
+  ["bent-over barbell rows","10–15 reps","hinge forward with a flat back and pull the bar towards your lower ribs.","back, biceps",3],
   ["dumbbell pullovers","10–12 reps","lie back, keep arms softly bent and lower the weight behind your head under control.","lats, chest",2],
-  ["reverse dumbbell fly","12–15 reps","hinge forward with a neutral back and lift arms out gently.","rear shoulders, upper back",2],
-  ["dumbbell bicep curls","10–15 reps","curl without swinging your body; lower slowly.","biceps",2],
+  ["reverse dumbbell fly","12–15 reps","hinge forward with a neutral back and lift arms out gently.","rear shoulders, upper back",3],
+  ["dumbbell bicep curls","10–12 reps","curl without swinging your body; lower slowly.","biceps",3],
   ["hammer curls","10–12 reps","keep palms facing each other and curl without swinging.","biceps, forearms",2]]},
- {day:"Wed",name:"legs",kind:"strength",desc:"day 3: quads, hamstrings and glutes",items:[
+ {day:"Wed",name:"legs",kind:"strength",desc:"quads, hamstrings and glutes",items:[
   ["goblet squats","10–15 reps","hold one dumbbell at your chest, sit hips back and stand smoothly.","quads, glutes",3],
   ["romanian deadlifts","10–12 reps","push hips backwards with a neutral back and feel the stretch in your hamstrings.","hamstrings, glutes",3],
-  ["reverse lunges","10 each side","step back and lower gently with your front knee over your ankle.","legs, glutes",2],
+  ["reverse lunges","10 each leg","step back and lower gently with your front knee over your ankle.","legs, glutes",2],
   ["glute bridges","12–15 reps","lift hips while keeping ribs down; avoid arching your lower back.","glutes",2],
-  ["calf raises","12–15 reps","rise onto your toes, pause, then lower slowly.","calves",2]]},
- {day:"Thu",name:"rest",kind:"rest",desc:"day 4: no hard strength training. gentle mobility, core and a 5 km run or walk",items:[]},
- {day:"Fri",name:"chest / back / arms",kind:"strength",desc:"day 5: chest, back and arms",items:[
+  ["standing calf raises","12–15 reps","rise onto your toes, pause, then lower slowly.","calves",3]]},
+ {day:"Thu",name:"rest",kind:"rest",desc:"easy walking, cycling or gentle movement. no hard strength training. give your muscles time to recover. core and a 5 km run or walk below",items:[]},
+ {day:"Fri",name:"chest / back / arms",kind:"strength",desc:"chest, back and arms, plus abs",items:[
   ["dumbbell floor press","10–12 reps","press up from the floor and lower until upper arms gently touch the ground.","chest, triceps",2],
+  ["push-ups","controlled","keep your body in a straight line and move slowly; use an incline or knees if you need to.","chest, triceps, core",2],
   ["one-arm dumbbell rows","10–15 each side","support a hand on a stable surface, keep your back neutral and pull towards your hip.","back, biceps",3],
+  ["bent-over barbell rows","10–15 reps","hinge forward with a flat back and pull the bar towards your lower ribs.","back, biceps",2],
   ["dumbbell curls","10–12 reps","curl without swinging your body; lower slowly.","biceps",2],
   ["hammer curls","10–12 reps","keep palms facing each other and curl without swinging.","biceps, forearms",2],
-  ["tricep extensions","10–15 reps","hold one dumbbell securely with both hands; bend and straighten elbows slowly.","triceps",2]]},
- {day:"Sat",name:"shoulders + legs",kind:"strength",desc:"day 6: shoulders and legs",items:[
-  ["dumbbell lateral raises","12–15 reps","raise arms out to the sides to about shoulder height with soft elbows.","side shoulders",3],
-  ["dumbbell reverse fly","12–15 reps","hinge forward with a neutral back and lift arms out gently.","rear shoulders, upper back",2],
+  ["overhead tricep extensions","10–15 reps","hold one dumbbell securely with both hands; bend and straighten elbows slowly.","triceps",2],
+  ["tricep kickbacks","12–15 reps","hinge forward, keep your upper arm still and straighten your elbow back; return slowly.","triceps",2],
+  ["crunches","12–15 reps","curl your shoulders off the floor slowly without pulling on your neck.","abs",3]]},
+ {day:"Sat",name:"shoulders + legs + abs",kind:"strength",desc:"shoulders, legs and abs",items:[
+  ["dumbbell front raises","10–12 reps","raise weights in front of you to shoulder height with soft elbows; lower slowly.","front shoulders",2],
+  ["lateral raises","12–15 reps","raise arms out to the sides to about shoulder height with soft elbows.","side shoulders",2],
+  ["reverse dumbbell fly","12–15 reps","hinge forward with a neutral back and lift arms out gently.","rear shoulders, upper back",2],
   ["goblet squats","10–15 reps","hold one dumbbell at your chest, sit hips back and stand smoothly.","quads, glutes",2],
   ["romanian deadlifts","10–12 reps","push hips backwards with a neutral back and feel the stretch in your hamstrings.","hamstrings, glutes",2],
-  ["calf raises","12–15 reps","rise onto your toes, pause, then lower slowly.","calves",2]]},
- {day:"Sun",name:"rest",kind:"rest",desc:"day 7: full recovery. let your muscles adapt, with core and a 5 km run or walk",items:[]}
+  ["calf raises","12–15 reps","rise onto your toes, pause, then lower slowly.","calves",2],
+  ["dead bugs","8–12 each side","on your back, extend opposite arm and leg while keeping your lower back supported.","abs",3]]},
+ {day:"Sun",name:"rest",kind:"rest",desc:"full recovery day. core and a 5 km run or walk below",items:[]}
 ];
 const sub=it=>`${it[4]} ${it[4]===1?'set':'sets'} · ${esc(it[1])} · ${esc(it[3])}`;
 const CORE=[['crunches','46 total (23 + 23)'],['leg raises','55 total (27 + 28)'],['twists','35 total (17 + 18)'],['push-ups','20 total']];
@@ -225,7 +256,7 @@ const todayISO=()=>iso(new Date()),dow=s=>(new Date(s+'T12:00:00').getDay()+6)%7
 const dateAdd=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return iso(d)};
 const mondayOf=s=>{s=s||todayISO();return dateAdd(s,-dow(s))};
 const fmt=(s,o)=>new Date(s+'T12:00:00').toLocaleDateString(undefined,o);
-let data={};try{data=JSON.parse(localStorage.getItem(K)||'null')||{};if(!Object.keys(data).length){const o=JSON.parse(localStorage.getItem('strengthTrackerV1')||'{}');['habits','notes','progress'].forEach(k=>{if(o[k])data[k]=o[k]})}}catch(e){}
+let data={};try{data=JSON.parse(localStorage.getItem(K)||'null')||{};if(!Object.keys(data).length){const o=JSON.parse(localStorage.getItem('strengthTrackerV2')||localStorage.getItem('strengthTrackerV1')||'{}');['habits','notes','progress'].forEach(k=>{if(o[k])data[k]=o[k]})}}catch(e){}
 function init(){data.days=data.days||{};data.settings=Object.assign({remind:false,time:'07:00',last:''},data.settings)}init();
 let selected=dow(todayISO()),lastDay=todayISO();
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(data))}catch(e){}};
@@ -245,7 +276,7 @@ function tasks(w,st){if(w.kind==='strength')return w.items.map((it,j)=>chk('ex',
 function renderHero(){const t=todayISO(),i=dow(t),w=workouts[i],st=ST(mondayOf(),i,true),f=frac(w,st),s=streak();
  $('dateLine').textContent=fmt(t,{weekday:'long',day:'numeric',month:'long'});$('todayHeading').textContent=w.name;$('todaySub').textContent=w.desc;
  $('todayChecklist').innerHTML=tasks(w,st);$('ringFg').style.strokeDashoffset=213.6*(1-f);$('ringTxt').textContent=Math.round(f*100)+'%';
- $('streakChip').textContent=s+(s===1?' day streak':' day streak');$('nextUp').textContent=`next: ${DN[(i+1)%7]}, ${workouts[(i+1)%7].name}`}
+ $('streakChip').textContent=s+(s===1?' day streak':' day streak');$('heroStart').hidden=w.kind!=='strength';$('nextUp').textContent=`next: ${DN[(i+1)%7]}, ${workouts[(i+1)%7].name}`}
 $('todayChecklist').onchange=e=>{if(!e.target.dataset.k)return;const i=dow(todayISO());tick(e.target,ST(mondayOf(),i,true));save();renderAll()};
 function renderStats(){const m=wk();let c=0,dn=0;workouts.forEach((w,i)=>{const d=isDone(w,ST(m,i,false));if(d)dn++;if(d&&w.kind==='strength')c++});
  const h=(data.habits||{})[$('habitDate').value||todayISO()]||{};
@@ -261,9 +292,9 @@ function renderWorkout(){const w=workouts[selected],st=dayState(selected),f=frac
  if(w.kind==='strength')h+=`<p class="note">warm up for about 5 minutes. rest 1–2 minutes between sets and usually leave 2–3 good reps in reserve.</p>`+w.items.map((it,j)=>{const lg=st.logs[j]||{};
   return `<div class="ex">${chk('ex',j,st.checked[j],`${j+1}. ${esc(it[0])}`,sub(it))}<p class="note ind">${esc(it[2])}</p><div class="logrow" style="grid-template-columns:repeat(${it[4]+1},1fr)">${[...Array(it[4]).keys()].map(k=>['s'+(k+1),'set '+(k+1)+' reps','reps','number']).concat([['weight','weight (kg)','e.g. 2.5','text']]).map(x=>`<label>${x[1]}<input type="${x[3]}" ${x[3]==='number'?'min="0" max="1000" inputmode="numeric"':''} data-log="${j}" data-f="${x[0]}" value="${esc(lg[x[0]]||'')}" placeholder="${x[2]}"></label>`).join('')}</div></div>`}).join('');
  else{h+=tasks(w,st);if(w.kind==='activity')h+=`<label class="lab" for="actNote" style="margin-top:8px">what did you do? (optional)</label><input id="actNote" type="text" value="${esc(st.actNote||'')}" placeholder="e.g. played basketball">`}
- h+=`<div class="actions"><button class="primary" id="dayAll">${f>=1?'clear this day':'mark day complete'}</button></div>`;$('workoutPanel').innerHTML=h}
+ h+=`<div class="actions">${w.kind==='strength'?'<button class="primary" id="startSel">start workout</button>':''}<button id="dayAll">${f>=1?'clear this day':'mark day complete'}</button></div>`;$('workoutPanel').innerHTML=h}
 $('workoutPanel').onchange=e=>{const t=e.target,st=dayState(selected);if(t.dataset.k){tick(t,st);save();renderAll()}else if(t.dataset.log!==undefined){(st.logs[t.dataset.log]=st.logs[t.dataset.log]||{})[t.dataset.f]=t.value;save();renderCharts()}else if(t.id==='actNote'){st.actNote=t.value;save()}};
-$('workoutPanel').onclick=e=>{if(e.target.id==='dayAll'){const w=workouts[selected],st=dayState(selected);setDay(w,st,frac(w,st)<1);save();renderAll()}};
+$('workoutPanel').onclick=e=>{if(e.target.id==='startSel'){coachStart(wk(),selected);return}if(e.target.id==='dayAll'){const w=workouts[selected],st=dayState(selected);setDay(w,st,frac(w,st)<1);save();renderAll()}};
 function renderCharts(){const t=mondayOf(),W=[];for(let k=7;k>=0;k--){const m=dateAdd(t,-7*k);let n=0;workouts.forEach((w,i)=>{if(isDone(w,ST(m,i,false)))n++});W.push([m,n])}
  $('chartWeeks').innerHTML=`<svg viewBox="0 0 320 130" class="chart" role="img" aria-label="days completed per week">${W.map((x,k)=>{const h=x[1]/7*76,xx=k*40+3;return `<rect x="${xx}" y="${100-h}" width="34" height="${Math.max(h,3)}" rx="8" fill="var(--acc)" opacity="${x[1]?1:.25}"/><text x="${xx+17}" y="${94-h}" text-anchor="middle" class="ct">${x[1]}</text><text x="${xx+17}" y="118" text-anchor="middle" class="cl">${fmt(x[0],{day:'numeric',month:'short'})}</text>`}).join('')}</svg>`;
  const sel=$('exSel');if(!sel.options.length){workouts.forEach((w,i)=>w.items.forEach((it,j)=>sel.add(new Option(`${w.day}: ${it[0]}`,i+':'+j))))}
@@ -295,6 +326,35 @@ $('addLog').onclick=()=>{const win=$('logWin').value.trim(),next=$('logNext').va
 $('exportData').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='strength-tracker-data.json';a.click();URL.revokeObjectURL(u);$('dataStatus').textContent='export started. keep the file somewhere safe.'};
 $('resetData').onclick=()=>{if(confirm('This deletes all saved tracker data from this browser. Export first if you want a backup.')){try{localStorage.removeItem(K)}catch(e){}data={};init();selected=dow(todayISO());$('notes').value='';renderAll();$('dataStatus').textContent='tracker data reset.'}};
 $('notes').value=(data.notes||{})[todayISO()]||'';
+const REST=120,BREAK=240;let C=null,AC=null,WL=null,lastB=-1;
+function beep(f,d){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.2;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d/1000)}catch(e){}try{navigator.vibrate&&navigator.vibrate(d)}catch(e){}}
+async function wake(){try{if(navigator.wakeLock)WL=await navigator.wakeLock.request('screen')}catch(e){}}
+function unwake(){try{WL&&WL.release()}catch(e){}WL=null}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&C&&C.idx<C.steps.length)wake()});
+function coachStart(m,i){const w=workouts[i];if(w.kind!=='strength')return;const steps=[];
+ w.items.forEach((it,j)=>{for(let k=0;k<it[4];k++){steps.push({t:'set',j,k});if(k<it[4]-1)steps.push({t:'rest',d:REST,label:'rest between sets',j,k:k+1})}if(j<w.items.length-1)steps.push({t:'rest',d:BREAK,label:'break before the next exercise',j:j+1,k:0})});
+ const st=ST(m,i,true);let idx=steps.findIndex(s=>s.t==='set'&&!st.checked[s.j]);if(idx<0)idx=0;
+ C={m,i,steps,idx:0,end:0,paused:false,left:0};$('coach').hidden=false;document.body.style.overflow='hidden';$('coach').scrollTop=0;beep(880,90);wake();coachGo(idx)}
+function coachGo(n){C.idx=n;lastB=-1;const s=C.steps[n];if(s&&s.t==='rest'){C.end=Date.now()+s.d*1000;C.paused=false}if(n>=C.steps.length)renderAll();coachRender()}
+function coachRender(){const w=workouts[C.i],n=C.steps.length,b=$('cBody');$('cBar').style.width=Math.round(C.idx/n*100)+'%';
+ if(C.idx>=n){$('cProg').textContent='finished';unwake();beep(990,300);b.innerHTML=`<div class="card hero"><h1>nice work</h1><p class="sub">${esc(w.name)} is complete and every exercise is ticked off in your tracker.</p></div><div class="actions"><button class="primary" id="cDone" style="padding:16px;flex:1">close</button></div>`;return}
+ const s=C.steps[C.idx],it=w.items[s.j];$('cProg').textContent=`step ${C.idx+1} of ${n}`;
+ if(s.t==='set'){const lg=ST(C.m,C.i,true).logs[s.j]||{};
+  b.innerHTML=`<div class="card hero"><div class="when">exercise ${s.j+1} of ${w.items.length}</div><h1 style="font-size:clamp(2rem,9vw,3.2rem)">${esc(it[0])}</h1><p class="sub">set ${s.k+1} of ${it[4]} · ${esc(it[1])}</p><p class="sub" style="margin-top:8px">${esc(it[2])}</p></div><div class="card"><div class="logrow" style="margin:0;grid-template-columns:1fr 1fr"><label>reps done<input id="cReps" type="number" min="0" max="1000" inputmode="numeric" value="${esc(lg['s'+(s.k+1)]||'')}" placeholder="optional"></label><label>weight (kg)<input id="cW" type="text" value="${esc(lg.weight||'')}" placeholder="e.g. 2.5"></label></div><div class="actions"><button class="primary" id="cSet" style="flex:1;padding:16px">done with set</button></div></div>`}
+ else{b.innerHTML=`<div class="card hero" style="text-align:center"><div class="when">${s.label}</div><div class="big" id="cTime">${Math.floor(s.d/60)}:${pad(s.d%60)}</div><p class="sub">next: ${esc(it[0])}, set ${s.k+1} of ${it[4]}</p></div><div class="actions"><button id="cAdd">+30 s</button><button id="cPause">pause</button><button class="primary" id="cSkip" style="flex:1">skip rest</button></div>`;coachTick()}}
+function coachTick(){if(!C||C.idx>=C.steps.length)return;const s=C.steps[C.idx];if(s.t!=='rest')return;
+ const r=C.paused?C.left:Math.max(0,Math.ceil((C.end-Date.now())/1000)),el=$('cTime');if(el)el.textContent=Math.floor(r/60)+':'+pad(r%60);
+ if(!C.paused&&r>0&&r<=3&&lastB!==r){lastB=r;beep(660,120)}
+ if(!C.paused&&r===0){beep(990,500);if(document.hidden){try{if('Notification' in window&&Notification.permission==='granted')new Notification('Rest over',{body:'next: '+workouts[C.i].items[s.j][0]})}catch(e){}}coachGo(C.idx+1)}}
+setInterval(coachTick,250);
+function coachClose(){C=null;$('coach').hidden=true;document.body.style.overflow='';unwake();renderAll()}
+$('coach').onclick=e=>{const id=e.target.id;if(!C||!id)return;const n=C.steps.length,s=C.steps[C.idx];
+ if(id==='cClose'||id==='cDone'){if(id==='cClose'&&C.idx<n&&!confirm('End this workout? Sets you finished are saved.'))return;coachClose()}
+ else if(id==='cSet'){const st=ST(C.m,C.i,true),lg=st.logs[s.j]=st.logs[s.j]||{},v=$('cReps').value,wv=$('cW').value.trim();if(v!=='')lg['s'+(s.k+1)]=v;if(wv)lg.weight=wv;if(s.k===workouts[C.i].items[s.j][4]-1)st.checked[s.j]=true;save();beep(740,90);coachGo(C.idx+1)}
+ else if(id==='cSkip')coachGo(C.idx+1);
+ else if(id==='cAdd'){if(C.paused)C.left+=30;else C.end+=30000;coachTick()}
+ else if(id==='cPause'){if(C.paused){C.end=Date.now()+C.left*1000;C.paused=false}else{C.left=Math.max(0,Math.ceil((C.end-Date.now())/1000));C.paused=true}e.target.textContent=C.paused?'resume':'pause';coachTick()}};
+$('startToday').onclick=()=>coachStart(mondayOf(),dow(todayISO()));
 renderAll();
 </script>
 </body>
